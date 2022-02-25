@@ -30,6 +30,7 @@ namespace ProductApi
             // Register database initializer for dependency injection
             services.AddTransient<IDbInitializer, DbInitializer>();
 
+            // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen();
 
             services.AddControllers();

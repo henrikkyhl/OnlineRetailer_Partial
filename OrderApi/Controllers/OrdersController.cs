@@ -47,27 +47,29 @@ namespace OrderApi.Controllers
             }
 
             // Call ProductApi to get the product ordered
-            RestClient c = new RestClient();
             // You may need to change the port number in the BaseUrl below
             // before you can run the request.
-            c.BaseUrl = new Uri("https://localhost:5001/products/");
-            var request = new RestRequest(order.ProductId.ToString(), Method.GET);
-            var response = c.Execute<Product>(request);
-            var orderedProduct = response.Data;
+            RestClient c = new RestClient("https://localhost:5001/products/");
+            var request = new RestRequest(order.ProductId.ToString());
+            var response = c.PostAsync<Product>(request);
+            response.Wait();
+            var orderedProduct = response.Result;
 
             if (order.Quantity <= orderedProduct.ItemsInStock - orderedProduct.ItemsReserved)
             {
                 // reduce the number of items in stock for the ordered product,
                 // and create a new order.
                 orderedProduct.ItemsReserved += order.Quantity;
-                var updateRequest = new RestRequest(orderedProduct.Id.ToString(), Method.PUT);
+                var updateRequest = new RestRequest(orderedProduct.Id.ToString());
                 updateRequest.AddJsonBody(orderedProduct);
-                var updateResponse = c.Execute(updateRequest);
+                var updateResponse = c.PutAsync(updateRequest);
+                updateResponse.Wait();
 
-                if (updateResponse.IsSuccessful)
+                if (updateResponse.IsCompletedSuccessfully)
                 {
                     var newOrder = repository.Add(order);
-                    return CreatedAtRoute("GetOrder", new { id = newOrder.Id }, newOrder);
+                    return CreatedAtRoute("GetOrder",
+                        new { id = newOrder.Id }, newOrder);
                 }
             }
 
