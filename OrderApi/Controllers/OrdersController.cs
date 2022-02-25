@@ -51,7 +51,7 @@ namespace OrderApi.Controllers
             // before you can run the request.
             RestClient c = new RestClient("https://localhost:5001/products/");
             var request = new RestRequest(order.ProductId.ToString());
-            var response = c.PostAsync<Product>(request);
+            var response = c.GetAsync<Product>(request);
             response.Wait();
             var orderedProduct = response.Result;
 
