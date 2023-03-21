@@ -1,4 +1,8 @@
-﻿using CustomersApi.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using CustomersApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CustomersApi.Data;
 
@@ -17,17 +21,20 @@ public class CustomerRepository: IRepository<Customer>
 
     public Customer Get(int id)
     {
-        throw new NotImplementedException();
+        return db.Customers.FirstOrDefault(o => o.Id == id);
     }
 
     public Customer Add(Customer entity)
     {
-        throw new NotImplementedException();
+        var newOrder = db.Customers.Add(entity).Entity;
+        db.SaveChanges();
+        return newOrder;
     }
-
+    
     public void Edit(Customer entity)
     {
-        throw new NotImplementedException();
+        db.Entry(entity).State = EntityState.Modified;
+        db.SaveChanges();
     }
 
     public void Remove(int id)
