@@ -5,6 +5,6 @@ namespace OrderApi.Infrastructure
 {
     public interface IMessagePublisher
     {
-        void PublishOrderStatusChangeMEssage(int? customerId, IEnumerable<OrderLine> orderLines, string topic);
+        void PublishOrderStatusChangedMessage(int? customerId, IEnumerable<OrderLine> orderLines, string topic);
     }
 }

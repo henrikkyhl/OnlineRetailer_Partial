@@ -14,7 +14,7 @@ namespace OrderApi.Infrastructure
             bus = RabbitHutch.CreateBus(connectionString);
         }
         
-        public void PublishOrderStatusChangeMEssage(int? customerId, IEnumerable<OrderLine> orderLines, string topic)
+        public void PublishOrderStatusChangedMessage(int? customerId, IEnumerable<OrderLine> orderLines, string topic)
         {
             var message = new OrderStatusChangedMessage
             {
