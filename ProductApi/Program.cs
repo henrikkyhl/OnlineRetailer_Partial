@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProductApi.Data;
+using ProductApi.Infrastructure;
 using ProductApi.Models;
 using SharedModels;
 
@@ -40,6 +41,7 @@ using (var scope = app.Services.CreateScope())
     var dbInitializer = services.GetService<IDbInitializer>();
     dbInitializer.Initialize(dbContext);
 }
+Task.Factory.StartNew(() => new MessageListener(app.Services, rabbitmqConnectionString).Start());
 
 //app.UseHttpsRedirection();
 

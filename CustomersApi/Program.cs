@@ -1,4 +1,5 @@
 using CustomersApi.Data;
+using CustomersApi.Infrastructure;
 using CustomersApi.Models;
 using Microsoft.EntityFrameworkCore;
 using SharedModels;
@@ -6,7 +7,7 @@ using SharedModels;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-//string rabbitmqConnectionString = "host=rabbitmq";
+string rabbitmqConnectionString = "host=rabbitmq";
 
 builder.Services.AddDbContext<CustomerApiContext>(opt => opt.UseInMemoryDatabase("CustomerDb"));
 
@@ -38,7 +39,9 @@ using (var scope = app.Services.CreateScope())
     dbInitializer.Initialize(dbContext);
 }
 
-app.UseHttpsRedirection();
+Task.Factory.StartNew(() => new MessageListener(app.Services, rabbitmqConnectionString).Start());
+
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
