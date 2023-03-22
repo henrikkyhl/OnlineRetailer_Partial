@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using OrderApi.Data;
+using OrderApi.Infrastructure;
 using OrderApi.Models;
 using RestSharp;
+using SharedModels;
+using Order = OrderApi.Models.Order;
 
 namespace OrderApi.Controllers
 {
@@ -12,10 +15,16 @@ namespace OrderApi.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IRepository<Order> repository;
+        private IServiceGateway<ProductDto> productServiceGateway;
+        private IMessagePublisher messagePublisher;
 
-        public OrdersController(IRepository<Order> repos)
+        public OrdersController(IRepository<Order> repos,
+            IMessagePublisher publisher,
+            IServiceGateway<ProductDto> gateway)
         {
             repository = repos;
+            messagePublisher = publisher;
+            productServiceGateway = gateway;
         }
 
         // GET: orders
@@ -34,48 +43,54 @@ namespace OrderApi.Controllers
             {
                 return NotFound();
             }
+
             return new ObjectResult(item);
         }
 
         // POST orders
         [HttpPost]
-        public IActionResult Post([FromBody]Order order)
+        public IActionResult Post([FromBody] Order order)
         {
             if (order == null)
             {
                 return BadRequest();
             }
+            
 
-            // Call ProductApi to get the product ordered
-            // You may need to change the port number in the BaseUrl below
-            // before you can run the request.
-            RestClient c = new RestClient("https://localhost:5001/products/");
-            var request = new RestRequest(order.ProductId.ToString());
-            var response = c.GetAsync<Product>(request);
-            response.Wait();
-            var orderedProduct = response.Result;
-
-            if (order.Quantity <= orderedProduct.ItemsInStock - orderedProduct.ItemsReserved)
+            if (!ProductItemsAvailable(order))
             {
-                // reduce the number of items in stock for the ordered product,
-                // and create a new order.
-                orderedProduct.ItemsReserved += order.Quantity;
-                var updateRequest = new RestRequest(orderedProduct.Id.ToString());
-                updateRequest.AddJsonBody(orderedProduct);
-                var updateResponse = c.PutAsync(updateRequest);
-                updateResponse.Wait();
-
-                if (updateResponse.IsCompletedSuccessfully)
-                {
-                    var newOrder = repository.Add(order);
-                    return CreatedAtRoute("GetOrder",
-                        new { id = newOrder.Id }, newOrder);
-                }
+                return StatusCode(500, "Items are not available...");
             }
-
-            // If the order could not be created, "return no content".
-            return NoContent();
+            
+            try
+            {
+                messagePublisher.PublishOrderStatusChangedMessage(
+                    order.CustomerId, order.OrderLines, "completed");
+                order.Status = SharedModels.Order.OrderStatus.completed;
+                var newOrder = repository.Add(order);
+                return CreatedAtRoute("GetOrder", new {id = newOrder.Id}, newOrder);
+            }
+            catch
+            {
+                return StatusCode(500, "An error occured.");
+            }
         }
 
+        private bool ProductItemsAvailable(Order order)
+        {
+            foreach (var orderLine in order.OrderLines)
+            {
+                var orderedProduct = productServiceGateway.Get(orderLine.ProductId);
+                if (orderedProduct == null)
+                {
+                    Console.WriteLine("ITS NULL");
+                }
+                if (orderLine.Quantity > orderedProduct.ItemsInStock - orderedProduct.ItemsReserved)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }

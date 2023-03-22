@@ -1,10 +1,20 @@
+using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using OrderApi.Data;
-using OrderApi.Models;
+using OrderApi.Infrastructure;
+using SharedModels;
+using Order = OrderApi.Models.Order;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+Uri productServiceBaseUrl = new Uri("http://productapi/products/");
+string cloudAMQPConnectionString =
+    "amqps://enoyogee:fsQEgoaIuYOO-lKQUT91TBdcBEgk0Ium@jaragua.lmq.cloudamqp.com/enoyogee";
 
 builder.Services.AddDbContext<OrderApiContext>(opt => opt.UseInMemoryDatabase("OrdersDb"));
 
@@ -13,7 +23,9 @@ builder.Services.AddScoped<IRepository<Order>, OrderRepository>();
 
 // Register database initializer for dependency injection
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
-
+builder.Services.AddSingleton<IServiceGateway<ProductDto>>(new
+    ProductServiceGateway(productServiceBaseUrl));
+builder.Services.AddSingleton<IMessagePublisher>(new MessagePublisher(cloudAMQPConnectionString));
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -36,8 +48,6 @@ using (var scope = app.Services.CreateScope())
     var dbInitializer = services.GetService<IDbInitializer>();
     dbInitializer.Initialize(dbContext);
 }
-
-app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
