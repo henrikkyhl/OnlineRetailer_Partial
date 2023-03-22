@@ -15,6 +15,7 @@
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' " />
   <ItemGroup>
     <PackageReference Include="EasyNetQ" Version="7.4.1" />
+    <PackageReference Include="EasyNetQ.Serialization.NewtonsoftJson" Version="7.4.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.3" />
     <PackageReference Include="RestSharp" Version="108.0.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
