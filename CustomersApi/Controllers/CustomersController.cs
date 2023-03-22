@@ -2,6 +2,7 @@
 using CustomersApi.Data;
 using CustomersApi.Models;
 using Microsoft.AspNetCore.Mvc;
+using SharedModels;
 
 namespace CustomersApi.Controllers;
 
@@ -10,17 +11,25 @@ namespace CustomersApi.Controllers;
 public class CustomersController : ControllerBase
 {
     private readonly IRepository<Customer> _repository;
+    private readonly IConverter<Customer, CustomerDto> _customerConverter;
 
-    public CustomersController(IRepository<Customer> repository)
+    public CustomersController(IRepository<Customer> repository, IConverter<Customer, CustomerDto> customerConverter)
     {
         _repository = repository;
+        _customerConverter = customerConverter;
     }
-    // Just for Testing!
+    
     // GET Customers
     [HttpGet]
-    public IEnumerable<Customer> Get()
+    public IEnumerable<CustomerDto> GetAll()
     {
-        return _repository.GetAll();
+        var customerDtoList = new List<CustomerDto>();
+        foreach (var customer in _repository.GetAll())
+        {
+            var customerDto = _customerConverter.ConvertModelToDto(customer);
+            customerDtoList.Add(customerDto);
+        }
+        return customerDtoList;
     }
     
     [HttpGet("{id}", Name = "GetCustomer")]
@@ -31,26 +40,28 @@ public class CustomersController : ControllerBase
         {
             return NotFound();
         }
-        return new ObjectResult(customer);
+        var customerDto = _customerConverter.ConvertModelToDto(customer);
+        return new ObjectResult(customerDto);
     }
     
     [HttpPost]
-    public IActionResult Register([FromBody] Customer customer)
+    public IActionResult Register([FromBody] CustomerDto customerDto)
     {
-        if (customer == null)
+        if (customerDto == null)
         {
             return BadRequest();
         }
 
+        var customer = _customerConverter.ConvertDtoToModel(customerDto);
         var newCustomer = _repository.Add(customer);
-        return CreatedAtRoute("GetCustomer",
-            new { id = newCustomer.Id }, newCustomer);
+            
+        return new ObjectResult(newCustomer);
     }
     
     [HttpPut("{id}")]
-    public IActionResult Put(int id, [FromBody]Customer customer)
+    public IActionResult Put(int id, [FromBody]CustomerDto customerDto)
     {
-        if (customer == null || customer.Id != id)
+        if (customerDto == null || customerDto.Id != id)
         {
             return BadRequest();
         }
@@ -62,12 +73,23 @@ public class CustomersController : ControllerBase
             return NotFound();
         }
 
-        modifiedCustomer.Email = customer.Email;
-        modifiedCustomer.Phone = customer.Phone;
-        modifiedCustomer.BillingAddress = customer.BillingAddress;
-        modifiedCustomer.ShippingAddress = customer.ShippingAddress;
+        modifiedCustomer.Email = customerDto.Email;
+        modifiedCustomer.Phone = customerDto.Phone;
+        modifiedCustomer.BillingAddress = customerDto.BillingAddress;
+        modifiedCustomer.ShippingAddress = customerDto.ShippingAddress;
 
         _repository.Edit(modifiedCustomer);
+        return new NoContentResult();
+    }
+    
+    [HttpDelete("{id}")]
+    public IActionResult Delete(int id)
+    {
+        if (_repository.Get(id) == null)
+        {
+            return NotFound();
+        }
+        _repository.Remove(id);
         return new NoContentResult();
     }
 }
