@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 Uri productServiceBaseUrl = new Uri("http://productapi/products/");
 string cloudAMQPConnectionString =
-    "amqps://enoyogee:fsQEgoaIuYOO-lKQUT91TBdcBEgk0Ium@jaragua.lmq.cloudamqp.com/enoyogee";
+    "amqps://yipjhogr:wsIR4-paTNfLOKgc95EMwnAFqWoA9twc@jackal.rmq.cloudamqp.com/yipjhogr";
 
 builder.Services.AddDbContext<OrderApiContext>(opt => opt.UseInMemoryDatabase("OrdersDb"));
 
