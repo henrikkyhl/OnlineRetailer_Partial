@@ -44,7 +44,7 @@ namespace OrderApi.Data
                 Id = order.Id,
                 Date = order.Date,
                 CustomerId = order.CustomerId,
-                OrderLines = order.OrderLines.Select(ol => new OrderLine()
+                OrderLines = order.OrderLines.Select(ol => new OrderLine()  
                 {
                     Id = ol.Id,
                     ProductId = ol.ProductId,

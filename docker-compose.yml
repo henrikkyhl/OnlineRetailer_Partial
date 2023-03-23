@@ -2,20 +2,27 @@ version: '3.4'
 
 services:
   customerapi:
-    image: ${DOCKER_REGISTRY-}customerapi
     build:
       context: .
       dockerfile: CustomersApi/Dockerfile
-
+    ports:
+      - 8000:80
   orderapi:
-    image: ${DOCKER_REGISTRY-}orderapi
     build:
       context: .
       dockerfile: OrderApi/Dockerfile
-
-
+    ports:
+      - 8001:80
+    depends_on:
+      - customerapi
+      - productapi
   productapi:
-    image: ${DOCKER_REGISTRY-}productapi
     build:
       context: .
       dockerfile: ProductApi/Dockerfile
+    ports:
+      - 8002:80
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15673:15672"
