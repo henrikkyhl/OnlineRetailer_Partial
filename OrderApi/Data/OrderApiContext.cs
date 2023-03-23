@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OrderApi.Models;
+using SharedModels;
+using Order = OrderApi.Models.Order;
 
 namespace OrderApi.Data;
 
@@ -11,4 +12,13 @@ public class OrderApiContext : DbContext
     }
 
     public DbSet<Order> Orders { get; set; }
+    public DbSet<OrderLine> OrderLines { get; set; }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Order>()
+            .HasMany(order => order.OrderLines)
+            .WithOne()
+            .HasForeignKey(orderLine => orderLine.OrderId);
+    }
 }

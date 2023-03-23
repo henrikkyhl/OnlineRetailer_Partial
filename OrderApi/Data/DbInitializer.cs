@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using OrderApi.Models;
 using System;
+using SharedModels;
+using Order = OrderApi.Models.Order;
 
 namespace OrderApi.Data
 {
@@ -18,13 +19,23 @@ namespace OrderApi.Data
             {
                 return;   // DB has been seeded
             }
-
+            
+            
+            
+            var orderLines = new List<OrderLine>{
+                new OrderLine{Id = 0,Quantity = 10,ProductId = 1,OrderId = 0},
+                new OrderLine{Id = 0,Quantity = 4,ProductId = 6,OrderId = 0},
+                new OrderLine{Id = 0,Quantity = 4,ProductId = 6,OrderId = 5}
+                
+            };
+            
             List<Order> orders = new List<Order>
             {
-                //new Order { Date = DateTime.Today, ProductId = 1, Quantity = 2 }
+                new Order{Id =0,Date = DateTime.Today, Status = SharedModels.Order.OrderStatus.completed,CustomerId = 0,OrderLines = orderLines},
             };
 
             context.Orders.AddRange(orders);
+            context.OrderLines.AddRange(orderLines);
             context.SaveChanges();
         }
     }

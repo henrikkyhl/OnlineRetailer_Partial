@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using OrderApi.Models;
 using System;
+using SharedModels;
+using Order = OrderApi.Models.Order;
 
 namespace OrderApi.Data
 {
@@ -38,7 +39,20 @@ namespace OrderApi.Data
 
         IEnumerable<Order> IRepository<Order>.GetAll()
         {
-            return db.Orders.ToList();
+            var select = db.Orders.Select(order => new Order()
+            {
+                Id = order.Id,
+                Date = order.Date,
+                CustomerId = order.CustomerId,
+                OrderLines = order.OrderLines.Select(ol => new OrderLine()
+                {
+                    Id = ol.Id,
+                    ProductId = ol.ProductId,
+                    Quantity = ol.Quantity,
+                    OrderId = ol.OrderId,
+                }).ToList(),
+            });
+            return select.ToList();
         }
 
         void IRepository<Order>.Remove(int id)

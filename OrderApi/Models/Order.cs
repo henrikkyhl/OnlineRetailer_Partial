@@ -9,7 +9,7 @@ namespace OrderApi.Models
         public int Id { get; set; }
         public DateTime? Date { get; set; }
         public SharedModels.Order.OrderStatus Status { get; set; }
-        public List<OrderLine> OrderLines { get; set; }
+        public IList<OrderLine> OrderLines { get; set; }
         public int CustomerId { get; set; }
     }
 }
