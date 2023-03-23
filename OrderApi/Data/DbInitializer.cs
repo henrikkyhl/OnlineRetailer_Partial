@@ -23,9 +23,9 @@ namespace OrderApi.Data
             
             
             var orderLines = new List<OrderLine>{
-                new OrderLine{Id = 0,Quantity = 10,ProductId = 1,OrderId = 0},
-                new OrderLine{Id = 0,Quantity = 4,ProductId = 6,OrderId = 0},
-                new OrderLine{Id = 0,Quantity = 4,ProductId = 6,OrderId = 5}
+                new OrderLine{Id = 0,Quantity = 15,ProductId = 1,OrderId = 0},
+                new OrderLine{Id = 0,Quantity = 40,ProductId = 2,OrderId = 0},
+                new OrderLine{Id = 0,Quantity = 4,ProductId = 3,OrderId = 0}
                 
             };
             
