@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OrderApi.Infrastructure;
 using ProductApi.Data;
 using ProductApi.Infrastructure;
 using ProductApi.Models;
@@ -18,6 +19,7 @@ builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
 
 builder.Services.AddSingleton<IConverter<Product, ProductDto>, ProductConverter>();
+builder.Services.AddSingleton<IMessagePublisher>(new MessagePublisher(rabbitmqConnectionString));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
