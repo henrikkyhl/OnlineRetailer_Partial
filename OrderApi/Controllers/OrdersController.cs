@@ -64,8 +64,8 @@ namespace OrderApi.Controllers
             
             try
             {
-                messagePublisher.PublishOrderStatusChangedMessage(
-                    order.CustomerId, order.OrderLines, "completed");
+                messagePublisher.PublishOrderCreateMessage(
+                    order.CustomerId, order.Id,order.OrderLines);
                 order.Status = SharedModels.Order.OrderStatus.completed;
                 var newOrder = repository.Add(order);
                 return CreatedAtRoute("GetOrder", new {id = newOrder.Id}, newOrder);

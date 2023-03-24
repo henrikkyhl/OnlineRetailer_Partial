@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using SharedModels;
 using EasyNetQ;
+using SharedModels;
+using SharedModels.Messages;
+
 
 namespace OrderApi.Infrastructure
 {
@@ -13,16 +15,16 @@ namespace OrderApi.Infrastructure
         {
             bus = RabbitHutch.CreateBus(connectionString);
         }
-        
-        public void PublishOrderStatusChangedMessage(int? customerId, IEnumerable<OrderLine> orderLines, string topic)
+
+        public void PublishOrderCreateMessage(int customerId, int orderId,IList<OrderLine> orderLine )
         {
-            var message = new OrderStatusChangedMessage
-            {
+            var message = new OrderCreatedMessage
+            { 
                 CustomerId = customerId,
-                OrderLines = orderLines
+                OrderId = orderId,
+                OrderLines = orderLine 
             };
-            
-            bus.PubSub.Publish(message,topic);
+            bus.PubSub.Publish(message);
         }
 
         public void Dispose()
