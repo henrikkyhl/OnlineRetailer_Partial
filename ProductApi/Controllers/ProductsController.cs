@@ -41,7 +41,9 @@ namespace ProductApi.Controllers
             {
                 return NotFound();
             }
-            return new ObjectResult(item);
+
+            var productDto = productConverter.Convert(item);
+            return new ObjectResult(productDto);
         }
 
         // POST products
@@ -56,7 +58,7 @@ namespace ProductApi.Controllers
             var product = productConverter.Convert(productDto);
             var newProduct = repository.Add(product);
 
-            return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, newProduct);
+            return CreatedAtRoute("GetProduct", new { id = newProduct.Id }, productConverter.Convert(newProduct));
         }
 
         // PUT products/5
