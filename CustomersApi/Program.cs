@@ -4,6 +4,7 @@ using CustomersApi.Models;
 using Microsoft.EntityFrameworkCore;
 using OrderApi.Infrastructure;
 using SharedModels;
+using MessageListener = CustomersApi.Infrastructure.MessageListener;
 
 var builder = WebApplication.CreateBuilder(args);
 

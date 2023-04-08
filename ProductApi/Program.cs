@@ -8,6 +8,7 @@ using ProductApi.Data;
 using ProductApi.Infrastructure;
 using ProductApi.Models;
 using SharedModels;
+using MessageListener = ProductApi.Infrastructure.MessageListener;
 
 var builder = WebApplication.CreateBuilder(args);
 

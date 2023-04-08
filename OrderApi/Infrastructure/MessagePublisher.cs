@@ -27,6 +27,17 @@ namespace OrderApi.Infrastructure
             bus.PubSub.Publish(message);
         }
 
+        public void OrderStatusChangedMessage(int id, IList<OrderLine> orderLine, string status)
+        {
+            var message = new OrderStatusChangedMessage
+            {
+                OrderId = id,
+                OrderLine = orderLine,
+                Status = status
+            };
+            bus.PubSub.Publish(message);
+        }
+
         public void Dispose()
         {
             bus.Dispose();
