@@ -1,8 +1,4 @@
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using OrderApi.Infrastructure;
 using ProductApi.Data;
 using ProductApi.Infrastructure;
@@ -24,7 +20,7 @@ builder.Services.AddScoped<IRepository<Product>, ProductRepository>();
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
 
 builder.Services.AddSingleton<IConverter<Product, ProductDto>, ProductConverter>();
-builder.Services.AddSingleton<IMessagePublisher>(new MessagePublisher(rabbitmqConnectionString));
+//builder.Services.AddSingleton<IMessagePublisher>(new MessagePublisher(rabbitmqConnectionString));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
