@@ -34,6 +34,7 @@ public class MessageListener
 
     private void HandleOrderCreated(OrderCreatedMessage message)
     {
+        Console.WriteLine("PRODUCT - LISTEN TO CREATE ORDER");
         using var scope = _provider.CreateScope();
         var services = scope.ServiceProvider;
         var productRepo = services.GetService<IRepository<Product>>();

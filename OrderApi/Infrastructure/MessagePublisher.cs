@@ -24,6 +24,7 @@ namespace OrderApi.Infrastructure
                 OrderId = orderId,
                 OrderLines = orderLine 
             };
+            Console.WriteLine("ORDER - PUBLISH CREATE ORDER");
             bus.PubSub.Publish(message);
         }
 
