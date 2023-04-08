@@ -8,7 +8,7 @@ namespace OrderApi.Models
     {
         public int Id { get; set; }
         public DateTime? Date { get; set; }
-        public SharedModels.Order.OrderStatus Status { get; set; }
+        public SharedModels.OrderDto.OrderStatus Status { get; set; }
         public IList<OrderLine> OrderLines { get; set; }
         public int CustomerId { get; set; }
     }
