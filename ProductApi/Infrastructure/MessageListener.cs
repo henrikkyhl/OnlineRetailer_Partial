@@ -8,8 +8,8 @@ namespace ProductApi.Infrastructure;
 
 public class MessageListener
 {
-    private IServiceProvider _provider;
-    private string _connection;
+    private readonly IServiceProvider _provider;
+    private readonly string _connection;
     private IBus _bus;
 
     public MessageListener(IServiceProvider serviceProvider, string connection)
@@ -65,18 +65,18 @@ public class MessageListener
         }
     }
 
-    public bool ProductItemsAvailable(IList<OrderLine> orderLines, IRepository<Product> productRepo)
+    private bool ProductItemsAvailable(IList<OrderLine> orderLines, IRepository<Product> productRepo)
     {
         foreach (var order in orderLines)
         {
             var product = productRepo.Get(order.ProductId);
-            if (order.Quantity > product.ItemsReserved - product.ItemsReserved)
+            if (order.Quantity > product.ItemsInStock - product.ItemsReserved)
             {
                 return false;
             }
         }
 
-        return false;
+        return true;
     }
     
     
