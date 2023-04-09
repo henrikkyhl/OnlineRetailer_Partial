@@ -22,7 +22,7 @@ public class MessageListener
     {
         using (_bus = RabbitHutch.CreateBus(_connection))
         {
-            _bus.PubSub.Subscribe<OrderCreatedMessage>("productApiCreate", HandleOrderCreated);
+            _bus.PubSub.Subscribe<OrderCreatedMessage>("product.OrderCreated", HandleOrderCreated);
             
             lock (this)
             {
@@ -34,6 +34,7 @@ public class MessageListener
 
     private void HandleOrderCreated(OrderCreatedMessage message)
     {
+        Console.WriteLine("PRODUCT - LISTEN TO CREATE ORDER");
         using var scope = _provider.CreateScope();
         var services = scope.ServiceProvider;
         var productRepo = services.GetService<IRepository<Product>>();

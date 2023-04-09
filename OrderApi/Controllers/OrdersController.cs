@@ -86,6 +86,7 @@ namespace OrderApi.Controllers
             try
             {
                 order.Status = OrderDto.OrderStatus.pending;
+                
                 var newOrder = _orderRepository.Add(_converter.Convert(order));
                 _messagePublisher.PublishOrderCreateMessage(
                     order.CustomerId, order.Id,order.OrderLines);
