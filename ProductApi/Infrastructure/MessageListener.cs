@@ -22,12 +22,49 @@ public class MessageListener
     {
         using (_bus = RabbitHutch.CreateBus(_connection))
         {
-            _bus.PubSub.Subscribe<OrderCreatedMessage>("product.OrderCreated", HandleOrderCreated);
+            _bus.PubSub.Subscribe<OrderCreatedMessage>("product.orderCreated", HandleOrderCreated);
+            
+            _bus.PubSub.Subscribe<OrderStatusChangedMessage>("product.orderStatusChanged", HandleOrderCancelled,x=>x.WithTopic("cancelled"));
+            
+            _bus.PubSub.Subscribe<OrderStatusChangedMessage>("product.orderStatusChanged", HandleOrderShipped,x=>x.WithTopic("shipped"));
             
             lock (this)
             {
                 Monitor.Wait(this);
             }
+        }
+    }
+
+    private void HandleOrderShipped(OrderStatusChangedMessage obj)
+    {
+        Console.WriteLine("SHIP ORDER REQUEST "+obj.OrderId);
+        using var scope = _provider.CreateScope();
+        var services = scope.ServiceProvider;
+        var repo = services.GetService<IRepository<Product>>();
+
+        foreach (var orderLine in obj.OrderLine)
+        {
+            var product = repo.Get(orderLine.ProductId);
+            var result = product;
+            result.ItemsReserved -= orderLine.Quantity;
+            result.ItemsInStock -= orderLine.Quantity;
+            repo.Edit(result);
+        }
+    }
+
+    private void HandleOrderCancelled(OrderStatusChangedMessage obj)
+    {
+        Console.WriteLine("CANCEL ORDER REQUEST "+obj.OrderId);
+        using var scope = _provider.CreateScope();
+        var services = scope.ServiceProvider;
+        var repo = services.GetService<IRepository<Product>>();
+
+        foreach (var orderLine in obj.OrderLine)
+        {
+            var product = repo.Get(orderLine.ProductId);
+            var result = product;
+            result.ItemsReserved -= orderLine.Quantity;
+            repo.Edit(result);
         }
     }
 
