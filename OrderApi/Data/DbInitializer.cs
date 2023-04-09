@@ -31,7 +31,7 @@ namespace OrderApi.Data
             
             List<Order> orders = new List<Order>
             {
-                new Order{Id =0,Date = DateTime.Today, Status = SharedModels.OrderDto.OrderStatus.completed,CustomerId = 0,OrderLines = orderLines},
+                new Order{Id =0,Date = DateTime.Today, Status = SharedModels.OrderDto.OrderStatus.pending,CustomerId = 0,OrderLines = orderLines},
             };
 
             context.Orders.AddRange(orders);

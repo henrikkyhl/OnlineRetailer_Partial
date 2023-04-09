@@ -35,15 +35,18 @@ public class MessageListener
     
     private void HandleOrderRejected(OrderRejectedMessage obj)
     {
+        Console.WriteLine($"ORDER REJECTED {obj.OrderId}");
         using var scope = _provider.CreateScope();
         var services = scope.ServiceProvider;
         var orderRepo = services.GetService<IOrderRepository<Order>>();
         
         orderRepo.Remove(obj.OrderId);
+        Console.WriteLine($"ORDER REMOVED");
     }
 
     private void HandleOrderAccepted(OrderAcceptedMessage obj)
     {
+        Console.WriteLine($"ORDER ACCEPTED {obj.OrderId}");
         using var scope = _provider.CreateScope();
         var services = scope.ServiceProvider;
         var orderRepo = services.GetService<IOrderRepository<Order>>();
@@ -51,5 +54,6 @@ public class MessageListener
         var order = orderRepo.Get(obj.OrderId);
         order.Status = OrderDto.OrderStatus.completed;
         orderRepo.Edit(order.Id, order);
+        Console.WriteLine($"ORDER {obj.OrderId} CHANGED STATUS TO COMPLETED");
     }
 }

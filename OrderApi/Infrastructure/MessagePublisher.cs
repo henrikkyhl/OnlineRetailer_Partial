@@ -26,16 +26,27 @@ namespace OrderApi.Infrastructure
             };
             bus.PubSub.Publish(message);
         }
+        
+        public void CreditStandingChangedMessage(int customerId)
+        {
+            var message = new CreditStandingChangedMessage
+            {
+                CustomerId = customerId
+            };
+            bus.PubSub.Publish(message);
+        }
 
-        public void OrderStatusChangedMessage(int id, IList<OrderLine> orderLine, string status)
+        public void OrderStatusChangedMessage(int id, IList<OrderLine> orderLine, string topic)
         {
             var message = new OrderStatusChangedMessage
             {
                 OrderId = id,
                 OrderLine = orderLine,
-                Status = status
             };
-            bus.PubSub.Publish(message);
+            bus.PubSub.Publish(message, x =>
+            {
+                x.WithTopic(topic);
+            });
         }
 
         public void Dispose()

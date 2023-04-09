@@ -22,13 +22,28 @@ public class MessageListener
     {
         using (_bus = RabbitHutch.CreateBus(_connection))
         {
-            _bus.PubSub.Subscribe<OrderPaidMessage>("customer.orderPaid", HandleOrderPaid);
             _bus.PubSub.Subscribe<OrderCreatedMessage>("customer.orderCreated", HandleOrderCreated);
+            _bus.PubSub.Subscribe<CreditStandingChangedMessage>("creditChanged",HandleChangeCreditStanding);
             
             lock (this)
             {
                 Monitor.Wait(this);
             }
+        }
+    }
+
+    private void HandleChangeCreditStanding(CreditStandingChangedMessage obj)
+    {
+        Console.WriteLine("Change customer standing to true");
+        using var scope = _provider.CreateScope();
+        var services = scope.ServiceProvider;
+        var customerRepository = services.GetService<IRepository<Customer>>();
+        
+        var customer = customerRepository.Get(obj.CustomerId);
+        
+        if(customer.CreditStanding == false){
+        customer.CreditStanding = true;
+        customerRepository.Edit(customer);
         }
     }
 
@@ -46,36 +61,6 @@ public class MessageListener
             customerRepository.Edit(customer);
 
             var replyMessage = new OrderAcceptedMessage()
-            {
-                OrderId = message.OrderId
-            };
-
-            _bus.PubSub.Publish(replyMessage);
-        }
-        else
-        {
-            var replyMessage = new OrderRejectedMessage
-            {
-                OrderId = message.OrderId
-            };
-
-            _bus.PubSub.Publish(replyMessage);
-        }
-    }
-
-    private void HandleOrderPaid(OrderPaidMessage message)
-    {
-        using var scope = _provider.CreateScope();
-        var services = scope.ServiceProvider;
-        var customerRepository = services.GetService<IRepository<Customer>>();
-
-        if (!GoodStanding(message.CustomerId, customerRepository))
-        {
-            var customer = customerRepository.Get(message.CustomerId);
-            customer.CreditStanding = true;
-            customerRepository.Edit(customer);
-
-            var replyMessage = new OrderPayAcceptedMessage
             {
                 OrderId = message.OrderId
             };

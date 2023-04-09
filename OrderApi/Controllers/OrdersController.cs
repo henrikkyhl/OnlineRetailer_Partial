@@ -89,9 +89,8 @@ namespace OrderApi.Controllers
                 
                 var newOrder = _orderRepository.Add(_converter.Convert(order));
                 _messagePublisher.PublishOrderCreateMessage(
-                    order.CustomerId, order.Id,order.OrderLines);
+                    newOrder.CustomerId, newOrder.Id,newOrder.OrderLines);
                 
-                order.Status = SharedModels.OrderDto.OrderStatus.completed;
                 return CreatedAtRoute("GetOrder", new {id = newOrder.Id}, newOrder);
             }
             catch
@@ -105,12 +104,17 @@ namespace OrderApi.Controllers
         public IActionResult Cancel(int id)
         {
             var order = _orderRepository.Get(id);
+            if (order.Status ==  OrderDto.OrderStatus.shipped)
+            {
+                return StatusCode(403);
+            }
             _orderRepository.Edit(id,new Order
             {
                 Id = id,
                 Status = OrderDto.OrderStatus.cancelled
             });
             _messagePublisher.OrderStatusChangedMessage(id,order.OrderLines,"cancelled");
+            _messagePublisher.CreditStandingChangedMessage(order.CustomerId);
             return Ok();
         }
         
@@ -136,7 +140,7 @@ namespace OrderApi.Controllers
                 Id = id,
                 Status = OrderDto.OrderStatus.paid
             });
-            //Credit standing changed message
+            _messagePublisher.CreditStandingChangedMessage(order.CustomerId);
             return Ok();
         }
     }

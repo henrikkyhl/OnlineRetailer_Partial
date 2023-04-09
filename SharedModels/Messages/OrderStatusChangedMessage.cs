@@ -6,6 +6,5 @@ namespace SharedModels
     {
         public int OrderId { get; set; }
         public IList<OrderLine> OrderLine { get; set; }
-        public string Status { get; set; }
     }
 }
