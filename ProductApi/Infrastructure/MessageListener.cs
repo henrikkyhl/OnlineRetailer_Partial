@@ -22,7 +22,7 @@ public class MessageListener
     {
         using (_bus = RabbitHutch.CreateBus(_connection))
         {
-            _bus.PubSub.Subscribe<OrderCreatedMessage>("productApiCreate", HandleOrderCreated);
+            _bus.PubSub.Subscribe<OrderCreatedMessage>("product.OrderCreated", HandleOrderCreated);
             
             lock (this)
             {

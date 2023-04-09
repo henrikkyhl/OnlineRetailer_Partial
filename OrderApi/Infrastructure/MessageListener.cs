@@ -23,9 +23,9 @@ public class MessageListener
         using (bus = RabbitHutch.CreateBus(connectionString))
         {
 
-            bus.PubSub.Subscribe<OrderAcceptedMessage>("orderAcceptedMessage", HandleOrderAccepted);
+            bus.PubSub.Subscribe<OrderAcceptedMessage>("order.Accepted", HandleOrderAccepted);
 
-            bus.PubSub.Subscribe<OrderRejectedMessage>("orderRejectedMessage", HandleOrderRejected);
+            bus.PubSub.Subscribe<OrderRejectedMessage>("order.Rejected", HandleOrderRejected);
             lock (this)
             {
                 Monitor.Wait(this);
