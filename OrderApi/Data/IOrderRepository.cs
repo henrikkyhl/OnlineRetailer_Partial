@@ -2,12 +2,13 @@
 
 namespace OrderApi.Data
 {
-    public interface IRepository<T>
+    public interface IOrderRepository<T>
     {
         IEnumerable<T> GetAll();
+        IEnumerable<T> GetAllByCustomer(int customerId);
         T Get(int id);
         T Add(T entity);
-        void Edit(T entity);
+        void Edit(int id, T entity);
         void Remove(int id);
     }
 }

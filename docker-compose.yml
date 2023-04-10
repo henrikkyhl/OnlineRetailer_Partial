@@ -1,0 +1,31 @@
+version: '3.4'
+
+services:
+  customerapi:
+    build:
+      context: .
+      dockerfile: CustomersApi/Dockerfile
+    ports:
+      - 8000:80
+    depends_on:
+      - rabbitmq
+  orderapi:
+    build:
+      context: .
+      dockerfile: OrderApi/Dockerfile
+    ports:
+      - 8001:80
+    depends_on:
+      - rabbitmq
+  productapi:
+    build:
+      context: .
+      dockerfile: ProductApi/Dockerfile
+    ports:
+      - 8002:80
+    depends_on:
+      - rabbitmq
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15673:15672"

@@ -1,19 +1,28 @@
+using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using OrderApi.Data;
+using OrderApi.Infrastructure;
 using OrderApi.Models;
+using SharedModels;
+using Order = OrderApi.Models.Order;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+string cloudAMQPConnectionString =
+    "host=rabbitmq";
+
 builder.Services.AddDbContext<OrderApiContext>(opt => opt.UseInMemoryDatabase("OrdersDb"));
-
 // Register repositories for dependency injection
-builder.Services.AddScoped<IRepository<Order>, OrderRepository>();
-
+builder.Services.AddScoped<IOrderRepository<Order>, OrderOrderRepository>();
+builder.Services.AddSingleton<IOrderConverter, OrderConverter>();
 // Register database initializer for dependency injection
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
-
+builder.Services.AddSingleton<IMessagePublisher>(new MessagePublisher(cloudAMQPConnectionString));
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -37,7 +46,7 @@ using (var scope = app.Services.CreateScope())
     dbInitializer.Initialize(dbContext);
 }
 
-app.UseHttpsRedirection();
+Task.Factory.StartNew(() => new MessageListener(app.Services, cloudAMQPConnectionString).Start());
 
 app.UseAuthorization();
 

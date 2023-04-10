@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using OrderApi.Data;
+using OrderApi.Infrastructure;
 using OrderApi.Models;
 using RestSharp;
+using SharedModels;
+using Order = OrderApi.Models.Order;
 
 namespace OrderApi.Controllers
 {
@@ -11,71 +14,131 @@ namespace OrderApi.Controllers
     [Route("[controller]")]
     public class OrdersController : ControllerBase
     {
-        private readonly IRepository<Order> repository;
+        private readonly IOrderRepository<Order> _orderRepository;
+        private IMessagePublisher _messagePublisher;
+        private IOrderConverter _converter;
 
-        public OrdersController(IRepository<Order> repos)
+        public OrdersController(IOrderRepository<Order> repos,
+            IMessagePublisher publisher,
+            IOrderConverter orderConverter)
         {
-            repository = repos;
+            _orderRepository = repos;
+            _messagePublisher = publisher;
+            _converter = orderConverter;
         }
 
         // GET: orders
         [HttpGet]
-        public IEnumerable<Order> Get()
+        public IEnumerable<OrderDto> Get()
         {
-            return repository.GetAll();
+            var orders = _orderRepository.GetAll();
+            var dtos = orders.Select(o => new OrderDto
+            {
+                Id = o.Id,
+                OrderLines = o.OrderLines,
+                CustomerId = o.CustomerId,
+                Status = o.Status,
+                Date = o.Date
+            });
+            return dtos;
+        }
+
+        [HttpGet("getAllByCustomer/{customerId}")]
+        public IEnumerable<OrderDto> GetByCustomerId(int customerId)
+        {
+            var orders = _orderRepository.GetAllByCustomer(customerId);
+            var dtos = orders.Select(o => new OrderDto
+            {
+                Id = o.Id,
+                OrderLines = o.OrderLines,
+                CustomerId = o.CustomerId,
+                Status = o.Status,
+                Date = o.Date
+            });
+            return dtos;
         }
 
         // GET orders/5
         [HttpGet("{id}", Name = "GetOrder")]
         public IActionResult Get(int id)
         {
-            var item = repository.Get(id);
+            var item = _orderRepository.Get(id);
             if (item == null)
             {
                 return NotFound();
             }
+
             return new ObjectResult(item);
         }
 
         // POST orders
         [HttpPost]
-        public IActionResult Post([FromBody]Order order)
+        public IActionResult Post([FromBody] OrderDto order)
         {
             if (order == null)
             {
                 return BadRequest();
             }
 
-            // Call ProductApi to get the product ordered
-            // You may need to change the port number in the BaseUrl below
-            // before you can run the request.
-            RestClient c = new RestClient("https://localhost:5001/products/");
-            var request = new RestRequest(order.ProductId.ToString());
-            var response = c.GetAsync<Product>(request);
-            response.Wait();
-            var orderedProduct = response.Result;
-
-            if (order.Quantity <= orderedProduct.ItemsInStock - orderedProduct.ItemsReserved)
+            try
             {
-                // reduce the number of items in stock for the ordered product,
-                // and create a new order.
-                orderedProduct.ItemsReserved += order.Quantity;
-                var updateRequest = new RestRequest(orderedProduct.Id.ToString());
-                updateRequest.AddJsonBody(orderedProduct);
-                var updateResponse = c.PutAsync(updateRequest);
-                updateResponse.Wait();
-
-                if (updateResponse.IsCompletedSuccessfully)
-                {
-                    var newOrder = repository.Add(order);
-                    return CreatedAtRoute("GetOrder",
-                        new { id = newOrder.Id }, newOrder);
-                }
+                order.Status = OrderDto.OrderStatus.pending;
+                
+                var newOrder = _orderRepository.Add(_converter.Convert(order));
+                _messagePublisher.PublishOrderCreateMessage(
+                    newOrder.CustomerId, newOrder.Id,newOrder.OrderLines);
+                
+                return CreatedAtRoute("GetOrder", new {id = newOrder.Id}, newOrder);
             }
-
-            // If the order could not be created, "return no content".
-            return NoContent();
+            catch
+            {
+                return StatusCode(500, "An error occured.");
+            }
         }
+        
 
+        [HttpPut("cancel/{id}")]
+        public IActionResult Cancel(int id)
+        {
+            var order = _orderRepository.Get(id);
+            if (order.Status ==  OrderDto.OrderStatus.shipped)
+            {
+                return StatusCode(403);
+            }
+            _orderRepository.Edit(id,new Order
+            {
+                Id = id,
+                Status = OrderDto.OrderStatus.cancelled
+            });
+            _messagePublisher.OrderStatusChangedMessage(id,order.OrderLines,"cancelled");
+            _messagePublisher.CreditStandingChangedMessage(order.CustomerId);
+            return Ok();
+        }
+        
+        [HttpPut("ship/{id}")]
+        public IActionResult Ship(int id)
+        {
+            var order = _orderRepository.Get(id);
+            _orderRepository.Edit(id,new Order
+            {
+                Id = id,
+                Status = OrderDto.OrderStatus.shipped
+            });
+            _messagePublisher.OrderStatusChangedMessage(id,order.OrderLines,"shipped");
+            return Ok();
+        }
+        
+        [HttpPut("pay/{id}")]
+        public IActionResult Pay(int id)
+        {
+            var order = _orderRepository.Get(id);
+            _orderRepository.Edit(id,new Order
+            {
+                Id = id,
+                Status = OrderDto.OrderStatus.paid
+            });
+            _messagePublisher.CreditStandingChangedMessage(order.CustomerId);
+            return Ok();
+        }
     }
 }
