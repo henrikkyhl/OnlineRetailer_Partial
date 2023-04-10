@@ -12,13 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 string rabbitmqConnectionString = "host=rabbitmq";
 
 builder.Services.AddDbContext<CustomerApiContext>(opt => opt.UseInMemoryDatabase("CustomerDb"));
-
 builder.Services.AddScoped<IRepository<Customer>, CustomerRepository>();
-
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
-
 builder.Services.AddSingleton<IConverter<Customer, CustomerDto>, CustomerConverter>();
-builder.Services.AddSingleton<IMessagePublisher>(new MessagePublisher(rabbitmqConnectionString));
+//builder.Services.AddSingleton<IMessagePublisher>(new MessagePublisher(rabbitmqConnectionString));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

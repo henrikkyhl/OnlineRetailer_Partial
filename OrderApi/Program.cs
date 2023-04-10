@@ -13,21 +13,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-Uri productServiceBaseUrl = new Uri("http://productapi/products/");
 string cloudAMQPConnectionString =
     "host=rabbitmq";
 
 builder.Services.AddDbContext<OrderApiContext>(opt => opt.UseInMemoryDatabase("OrdersDb"));
-
 // Register repositories for dependency injection
 builder.Services.AddScoped<IOrderRepository<Order>, OrderOrderRepository>();
-
 builder.Services.AddSingleton<IOrderConverter, OrderConverter>();
-
 // Register database initializer for dependency injection
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
-builder.Services.AddSingleton<IServiceGateway<ProductDto>>(new
-    ProductServiceGateway(productServiceBaseUrl));
 builder.Services.AddSingleton<IMessagePublisher>(new MessagePublisher(cloudAMQPConnectionString));
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
