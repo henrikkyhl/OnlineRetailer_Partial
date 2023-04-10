@@ -15,18 +15,15 @@ namespace OrderApi.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IOrderRepository<Order> _orderRepository;
-        private IServiceGateway<ProductDto> _productServiceGateway;
         private IMessagePublisher _messagePublisher;
         private IOrderConverter _converter;
 
         public OrdersController(IOrderRepository<Order> repos,
             IMessagePublisher publisher,
-            IServiceGateway<ProductDto> gateway,
             IOrderConverter orderConverter)
         {
             _orderRepository = repos;
             _messagePublisher = publisher;
-            _productServiceGateway = gateway;
             _converter = orderConverter;
         }
 
