@@ -1,8 +1,7 @@
-﻿using System;
-namespace OrderApi.Models
+﻿namespace SharedModels
 {
-    public class Product
-    {
+	public class ProductDto
+	{
         public int Id { get; set; }
         public string Name { get; set; }
         public decimal Price { get; set; }
@@ -10,3 +9,4 @@ namespace OrderApi.Models
         public int ItemsReserved { get; set; }
     }
 }
+
