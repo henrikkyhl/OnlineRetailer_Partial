@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "61576fe4-8f70-4ce5-b9b1-1491b3880e80",
+		"_postman_id": "bf5add0e-b28d-417e-8fa6-53e7daa7cd1a",
 		"name": "OnlineRetailer_Partial",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2647456"
 	},
 	"item": [
 		{
@@ -156,7 +157,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"productId\": 3,\n    \"quantity\": 1\n}\n"
+					"raw": "{\n\t\"orderLines\":[{\"productId\":2,\"quantity\":1},{\"productId\":3,\"quantity\":1}]\n}\n"
 				},
 				"url": {
 					"raw": "https://localhost:5003/orders",

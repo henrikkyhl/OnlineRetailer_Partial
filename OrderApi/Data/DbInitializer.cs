@@ -13,7 +13,7 @@ namespace OrderApi.Data
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
-            // Look for any Products
+            // Look for any Orders
             if (context.Orders.Any())
             {
                 return;   // DB has been seeded
@@ -21,7 +21,11 @@ namespace OrderApi.Data
 
             List<Order> orders = new List<Order>
             {
-                new Order { Date = DateTime.Today, ProductId = 1, Quantity = 2 }
+                new Order {
+                    Date = DateTime.Today,
+                    OrderLines = new List<OrderLine>{
+                        new OrderLine { ProductId = 1, Quantity = 2 } }
+                }
             };
 
             context.Orders.AddRange(orders);
